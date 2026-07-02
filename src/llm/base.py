@@ -1,0 +1,76 @@
+"""Base LLM provider interface."""
+
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+
+from src.core.config import LLMProvider, settings
+
+
+@dataclass
+class LLMResponse:
+    """Unified response from any LLM provider."""
+
+    content: str
+    model: str
+    provider: str
+    usage: dict[str, int] = field(default_factory=dict)
+    raw: object | None = None
+
+
+class BaseLLMClient(ABC):
+    """Abstract base for all LLM providers."""
+
+    @property
+    @abstractmethod
+    def provider_name(self) -> str:
+        """Return the provider identifier."""
+
+    @abstractmethod
+    async def generate(
+        self,
+        prompt: str,
+        system_prompt: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+        response_format: dict | None = None,
+    ) -> LLMResponse:
+        """Generate a completion.
+
+        Args:
+            prompt: User prompt text.
+            system_prompt: Optional system prompt.
+            temperature: Override default temperature.
+            max_tokens: Override default max tokens.
+            response_format: Optional JSON response format.
+
+        Returns:
+            LLMResponse with generated content.
+        """
+
+    @abstractmethod
+    async def generate_json(
+        self,
+        prompt: str,
+        system_prompt: str | None = None,
+        temperature: float | None = None,
+    ) -> dict:
+        """Generate a JSON response. Convenience wrapper around generate()."""
+
+
+def get_llm_client() -> BaseLLMClient:
+    """Factory: return the configured LLM provider client.
+
+    Change LLM_PROVIDER in .env to switch providers instantly.
+    """
+    provider = settings.LLM_PROVIDER
+
+    if provider == LLMProvider.OLLAMA:
+        return OllamaProvider()
+    elif provider == LLMProvider.OPENAI:
+        return OpenAIProvider()
+    elif provider == LLMProvider.OPENROUTER:
+        return OpenRouterProvider()
+    elif provider == LLMProvider.GEMINI:
+        return GeminiProvider()
+    else:
+        raise ValueError(f"Unknown LLM provider: {provider}")
