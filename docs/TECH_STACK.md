@@ -77,7 +77,7 @@ RATE_LIMIT_PER_MINUTE=20
 ## Project Structure
 
 ```
-agon/
+hamilia/
 ├── docs/
 │   ├── ARCHITECTURE.md      # System overview
 │   ├── PIPELINE.md          # Component deep dive

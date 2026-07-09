@@ -46,7 +46,7 @@ class Settings(BaseSettings):
         description="OpenRouter model name.",
     )
     OPENROUTER_SITE_URL: str = Field(
-        default="https://github.com/your-username/agon",
+        default="https://github.com/your-username/hamilia",
         description="OpenRouter HTTP-Referer header.",
     )
     OPENROUTER_APP_NAME: str = Field(

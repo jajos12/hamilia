@@ -1,5 +1,5 @@
 [project]
-name = "agon"
+name = "hamilia"
 version = "0.1.0"
 description = "Adversarial Evidence Engine - A dialectical RAG system"
 readme = "README.md"

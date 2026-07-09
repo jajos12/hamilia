@@ -1,3 +1,8 @@
+# Next.js
+node_modules/
+.next/
+out/
+
 # Python
 __pycache__/
 *.pyc
@@ -13,6 +18,7 @@ venv/
 
 # Environment variables
 .env
+.env.local
 
 # IDE
 .vscode/
@@ -31,5 +37,7 @@ data/
 # Logs
 *.log
 
-# Conda
-.conda/
+# Docker
+docker-compose.override.yml
+frontend/
+docs/designskills/
