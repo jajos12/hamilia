@@ -12,7 +12,7 @@ from src.ingestion.web_search_adapter import WebSearchAdapter
 from src.ingestion.rss_adapter import RSSAdapter
 from src.ingestion.file_adapter import FileAdapter
 from src.ingestion.chunker import chunk_document, chunk_documents
-from src.ingestion.indexer import index_documents
+from src.ingestion.indexer import index_chunks
 
 __all__ = [
     "DataSourceAdapter",
@@ -25,5 +25,5 @@ __all__ = [
     "FileAdapter",
     "chunk_document",
     "chunk_documents",
-    "index_documents",
+    "index_chunks",
 ]

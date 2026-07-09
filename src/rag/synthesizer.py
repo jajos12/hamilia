@@ -49,8 +49,8 @@ def format_chunks(chunks: list) -> str:
     lines = []
     for i, tagged in enumerate(chunks, 1):
         source_ref = (
-            f"{tagged.chunk.source.title} ({tagged.chunk.source.year})"
-            if tagged.chunk.source.title != "Unknown"
+            f"{tagged.chunk.title} ({tagged.chunk.year})"
+            if tagged.chunk.title
             else f"Source {i}"
         )
         lines.append(f"[{i}] {tagged.chunk.text}\n    Source: {source_ref}")

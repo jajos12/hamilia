@@ -4,6 +4,7 @@ Free, no API key required. No rate limit (be respectful).
 Best for: news articles, blog posts, structured content.
 """
 
+import asyncio
 import logging
 from datetime import datetime, timezone
 
@@ -14,15 +15,13 @@ from src.ingestion.base import Document, DocumentType, FetchResult, DataSourceAd
 
 logger = logging.getLogger(__name__)
 
-# Default feeds — expandable via config
+# Curated feeds — smaller set, more reliable
 DEFAULT_RSS_FEEDS: dict[str, str] = {
-    "bbc_technology": "https://feeds.bbci.co.uk/news/technology/rss.xml",
+    "bbc_tech": "https://feeds.bbci.co.uk/news/technology/rss.xml",
     "bbc_science": "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
     "bbc_business": "https://feeds.bbci.co.uk/news/business/rss.xml",
-    "reuters_technology": "https://www.reutersagency.com/feed/?taxonomy=best-topics&post_type=best",
     "guardian_science": "https://www.theguardian.com/science/rss",
     "techcrunch": "https://techcrunch.com/feed/",
-    "ars_technica": "https://feeds.arstechnica.com/arstechnica/index",
 }
 
 
@@ -47,34 +46,19 @@ class RSSAdapter(DataSourceAdapter):
 
         logger.info("RSS: fetching from %d feeds", len(self._feeds))
 
-        import asyncio
-
-        loop = asyncio.get_event_loop()
-
         for feed_name, feed_url in self._feeds.items():
             try:
-                def _parse() -> list[dict]:
-                    feed = feedparser.parse(feed_url)
-                    return [
-                        {
-                            "title": entry.get("title", ""),
-                            "link": entry.get("link", ""),
-                            "summary": entry.get("summary", ""),
-                            "published": entry.get("published", ""),
-                            "authors": [
-                                a.get("name", "")
-                                for a in entry.get("authors", [])
-                            ],
-                        }
-                        for entry in feed.entries[:10]  # Top 10 per feed
-                    ]
-
-                entries = await loop.run_in_executor(None, _parse)
+                # Run feedparser with a timeout
+                loop = asyncio.get_event_loop()
+                entries = await asyncio.wait_for(
+                    loop.run_in_executor(None, self._parse_feed, feed_url),
+                    timeout=settings.RSS_FEED_TIMEOUT,
+                )
 
                 for entry in entries:
                     try:
-                        title = entry["title"]
-                        summary = entry["summary"]
+                        title = entry.get("title", "")
+                        summary = entry.get("summary", "")
 
                         # Simple query relevance check
                         query_lower = query.lower()
@@ -82,20 +66,18 @@ class RSSAdapter(DataSourceAdapter):
                         if not any(word in text_lower for word in query_lower.split()):
                             continue
 
-                        # Parse date
                         year = None
                         if entry.get("published"):
                             try:
-                                dt = datetime.now(timezone.utc)
-                                year = dt.year
+                                year = datetime.now(timezone.utc).year
                             except (ValueError, TypeError):
                                 pass
 
                         doc = Document(
-                            id=self._make_id("rss", entry["link"]),
+                            id=self._make_id("rss", entry.get("link", "")),
                             title=title,
                             text=f"{title}\n\n{summary}",
-                            source_url=entry["link"],
+                            source_url=entry.get("link", ""),
                             source_name="rss",
                             doc_type=DocumentType.NEWS_ARTICLE,
                             authors=entry.get("authors", []),
@@ -109,6 +91,9 @@ class RSSAdapter(DataSourceAdapter):
                     except Exception as e:
                         errors.append(f"Failed to parse entry from {feed_name}: {e}")
 
+            except asyncio.TimeoutError:
+                errors.append(f"Feed {feed_name} timed out after {settings.RSS_FEED_TIMEOUT}s")
+                logger.warning("RSS: feed %s timed out", feed_name)
             except Exception as e:
                 errors.append(f"Failed to fetch feed {feed_name}: {e}")
 
@@ -124,3 +109,18 @@ class RSSAdapter(DataSourceAdapter):
             total_found=len(documents),
             errors=errors,
         )
+
+    @staticmethod
+    def _parse_feed(feed_url: str) -> list[dict]:
+        """Parse a feed URL (sync, run in executor)."""
+        feed = feedparser.parse(feed_url)
+        return [
+            {
+                "title": entry.get("title", ""),
+                "link": entry.get("link", ""),
+                "summary": entry.get("summary", ""),
+                "published": entry.get("published", ""),
+                "authors": [a.get("name", "") for a in entry.get("authors", [])],
+            }
+            for entry in feed.entries[:10]
+        ]

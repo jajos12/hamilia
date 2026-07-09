@@ -54,11 +54,18 @@ class Settings(BaseSettings):
         description="OpenRouter X-Title header.",
     )
 
-    # Google Gemini (generous free tier)
-    GEMINI_API_KEY: str = Field(default="", description="Google AI Studio API key.")
+    # Google Gemini (generous free tier, supports key rotation)
+    GEMINI_API_KEYS: str = Field(
+        default="",
+        description="Comma-separated Gemini API keys for rotation on rate limits.",
+    )
     GEMINI_MODEL: str = Field(
         default="gemini-2.0-flash",
         description="Gemini model name.",
+    )
+    GEMINI_KEYS_INDEX: int = Field(
+        default=0,
+        description="Current key index (managed internally, rotates on rate limit).",
     )
 
     # Shared LLM config

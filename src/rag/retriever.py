@@ -31,12 +31,21 @@ class RetrievalResult:
     errors: list[str] = field(default_factory=list)
 
 
+async def _with_timeout(coro, timeout: float, default=None):
+    """Run a coroutine with a timeout, returning default on failure."""
+    try:
+        return await asyncio.wait_for(coro, timeout=timeout)
+    except (asyncio.TimeoutError, Exception) as e:
+        logger.warning("Source timed out or failed: %s", e)
+        return default
+
+
 async def retrieve_adversarial(
     pro_query: str, con_query: str, claim: str
 ) -> RetrievalResult:
     """Retrieve evidence from multiple sources for both PRO and CON queries.
 
-    Sources queried in parallel:
+    Sources queried in parallel with per-source timeouts:
     - ChromaDB (pre-indexed corpus)
     - arXiv (academic papers)
     - Semantic Scholar (academic papers)
@@ -45,17 +54,17 @@ async def retrieve_adversarial(
     """
     logger.info("Retrieving evidence for PRO='%s', CON='%s'", pro_query, con_query)
 
-    # Run both queries against all sources in parallel
+    # Each source gets its own timeout so one slow source can't block everything
     tasks = [
-        _retrieve_from_chromadb(pro_query, settings.TOP_K_RETRIEVAL),
-        _retrieve_from_chromadb(con_query, settings.TOP_K_RETRIEVAL),
-        _retrieve_from_arxiv(pro_query, 5),
-        _retrieve_from_arxiv(con_query, 5),
-        _retrieve_from_semantic_scholar(pro_query, 5),
-        _retrieve_from_semantic_scholar(con_query, 5),
-        _retrieve_from_web(pro_query, 5),
-        _retrieve_from_web(con_query, 5),
-        _retrieve_from_rss(claim, 10),
+        _with_timeout(_retrieve_from_chromadb(pro_query, settings.TOP_K_RETRIEVAL), 10),
+        _with_timeout(_retrieve_from_chromadb(con_query, settings.TOP_K_RETRIEVAL), 10),
+        _with_timeout(_retrieve_from_arxiv(pro_query, 5), 15),
+        _with_timeout(_retrieve_from_arxiv(con_query, 5), 15),
+        _with_timeout(_retrieve_from_semantic_scholar(pro_query, 5), 15),
+        _with_timeout(_retrieve_from_semantic_scholar(con_query, 5), 15),
+        _with_timeout(_retrieve_from_web(pro_query, 5), 15),
+        _with_timeout(_retrieve_from_web(con_query, 5), 15),
+        _with_timeout(_retrieve_from_rss(claim, 10), 20),
     ]
 
     results = await asyncio.gather(*tasks, return_exceptions=True)

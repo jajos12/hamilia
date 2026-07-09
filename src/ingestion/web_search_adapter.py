@@ -4,6 +4,7 @@ Free, no API key required. Rate limit: soft limit, backoff recommended.
 Best for: general web search, news, opinion pieces.
 """
 
+import asyncio
 import logging
 
 from src.core.config import settings
@@ -30,21 +31,23 @@ class WebSearchAdapter(DataSourceAdapter):
         logger.info("DuckDuckGo: searching '%s' (max=%d)", query, max_results)
 
         try:
-            from duckduckgo_search import DDGS
-
-            documents: list[Document] = []
-
-            # Run sync DDGS in thread pool
-            import asyncio
-
             loop = asyncio.get_event_loop()
 
             def _search() -> list[dict]:
+                try:
+                    from ddgs import DDGS
+                except ImportError:
+                    from duckduckgo_search import DDGS
+
                 with DDGS() as ddgs:
                     return list(ddgs.text(query, max_results=max_results))
 
-            results = await loop.run_in_executor(None, _search)
+            results = await asyncio.wait_for(
+                loop.run_in_executor(None, _search),
+                timeout=15,
+            )
 
+            documents: list[Document] = []
             for i, result in enumerate(results):
                 try:
                     url = result.get("href", "")
@@ -77,14 +80,23 @@ class WebSearchAdapter(DataSourceAdapter):
                 errors=errors,
             )
 
-        except ImportError:
-            logger.error("DuckDuckGo: duckduckgo-search not installed")
+        except asyncio.TimeoutError:
+            logger.warning("DuckDuckGo: search timed out")
             return FetchResult(
                 documents=[],
                 source="web",
                 query=query,
                 total_found=0,
-                errors=["duckduckgo-search package not installed"],
+                errors=["Search timed out"],
+            )
+        except ImportError:
+            logger.error("DuckDuckGo: ddgs/duckduckgo-search not installed")
+            return FetchResult(
+                documents=[],
+                source="web",
+                query=query,
+                total_found=0,
+                errors=["Search package not installed"],
             )
         except Exception as e:
             logger.error("DuckDuckGo: fetch failed: %s", e)

@@ -65,12 +65,16 @@ def get_llm_client() -> BaseLLMClient:
     provider = settings.LLM_PROVIDER
 
     if provider == LLMProvider.OLLAMA:
+        from src.llm.ollama_provider import OllamaProvider
         return OllamaProvider()
     elif provider == LLMProvider.OPENAI:
+        from src.llm.openai_provider import OpenAIProvider
         return OpenAIProvider()
     elif provider == LLMProvider.OPENROUTER:
+        from src.llm.openrouter_provider import OpenRouterProvider
         return OpenRouterProvider()
     elif provider == LLMProvider.GEMINI:
+        from src.llm.gemini_provider import GeminiProvider
         return GeminiProvider()
     else:
         raise ValueError(f"Unknown LLM provider: {provider}")
