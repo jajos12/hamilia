@@ -3,7 +3,7 @@ name = "hamilia"
 version = "0.1.0"
 description = "Adversarial Evidence Engine - A dialectical RAG system"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 license = {text = "MIT"}
 
 dependencies = [
@@ -66,3 +66,6 @@ disallow_untyped_defs = true
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+
+[tool.vercel]
+entrypoint = "api/index.py:app"
