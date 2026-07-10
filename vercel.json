@@ -1,26 +1,22 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd frontend && npm install && npm run build",
+  "outputDirectory": "frontend/.next",
+  "framework": "nextjs",
   "functions": {
-    "src/api/main.py": {
-      "runtime": "python",
+    "api/index.py": {
+      "runtime": "python@3.11",
       "maxDuration": 30
     }
   },
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "src/api/main.py"
+      "destination": "/api/index.py"
     },
     {
       "source": "/health",
-      "destination": "src/api/main.py"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/frontend/$1"
+      "destination": "/api/index.py"
     }
-  ],
-  "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/.next",
-  "framework": "nextjs"
+  ]
 }

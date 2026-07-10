@@ -22,5 +22,5 @@ app.include_router(router, prefix="/api")
 async def health():
     return {"status": "ok"}
 
-# Vercel entrypoint
+# Vercel handler
 handler = app
