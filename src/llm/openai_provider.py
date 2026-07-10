@@ -2,6 +2,7 @@
 
 import json
 import logging
+from collections.abc import AsyncIterator
 
 from openai import AsyncOpenAI
 
@@ -66,6 +67,35 @@ class OpenAIProvider(BaseLLMClient):
             usage=usage,
             raw=response,
         )
+
+    async def generate_stream(
+        self,
+        prompt: str,
+        system_prompt: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+    ) -> AsyncIterator[str]:
+        model = settings.OPENAI_MODEL
+        messages = []
+
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
+        logger.info("OpenAI: streaming with model=%s", model)
+
+        response = await self._client.chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=temperature or settings.LLM_TEMPERATURE,
+            max_tokens=max_tokens or settings.LLM_MAX_TOKENS,
+            stream=True,
+        )
+
+        async for chunk in response:
+            delta = chunk.choices[0].delta
+            if delta.content:
+                yield delta.content
 
     async def generate_json(
         self,

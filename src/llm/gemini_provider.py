@@ -4,6 +4,7 @@ import asyncio
 import json
 import logging
 import time
+from collections.abc import AsyncIterator
 
 from src.core.config import settings
 from src.llm.base import BaseLLMClient, LLMResponse
@@ -164,6 +165,97 @@ class GeminiProvider(BaseLLMClient):
                 raise
 
         # All attempts exhausted
+        raise RuntimeError(
+            f"Gemini: all {len(self._keys)} API keys exhausted after {max_attempts} attempts. "
+            f"Last error: {last_error}"
+        )
+
+    async def generate_stream(
+        self,
+        prompt: str,
+        system_prompt: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+    ) -> AsyncIterator[str]:
+        from google import genai
+
+        model_name = self._model
+        temperature = temperature or settings.LLM_TEMPERATURE
+        max_attempts = len(self._keys) * 2
+
+        last_error = None
+        for attempt in range(max_attempts):
+            try:
+                client = self._get_client()
+                config = genai.types.GenerateContentConfig(
+                    temperature=temperature,
+                    max_output_tokens=max_tokens or settings.LLM_MAX_TOKENS,
+                )
+
+                if system_prompt:
+                    config.system_instruction = system_prompt
+
+                logger.info(
+                    "Gemini: streaming with model=%s (key=%d/%d, attempt=%d/%d)",
+                    model_name,
+                    self._current_index + 1,
+                    len(self._keys),
+                    attempt + 1,
+                    max_attempts,
+                )
+
+                loop = asyncio.get_event_loop()
+                response = await loop.run_in_executor(
+                    None,
+                    lambda: client.models.generate_content_stream(
+                        model=model_name,
+                        contents=prompt,
+                        config=config,
+                    ),
+                )
+
+                for chunk in response:
+                    if chunk.text:
+                        # Split by word boundaries for smoother streaming
+                        text = chunk.text
+                        words = text.split(" ")
+                        for i, word in enumerate(words):
+                            if i < len(words) - 1:
+                                yield word + " "
+                            else:
+                                yield word
+                return
+
+            except Exception as e:
+                last_error = e
+                error_msg = str(e).lower()
+                if "429" in error_msg or "rate" in error_msg or "quota" in error_msg or "resource_exhausted" in error_msg:
+                    delay = 30
+                    try:
+                        if hasattr(e, 'args') and e.args:
+                            err_str = str(e.args[0])
+                            if "retryDelay" in err_str:
+                                import re
+                                match = re.search(r"'retryDelay':\s*'(\d+)s'", err_str)
+                                if match:
+                                    delay = int(match.group(1))
+                    except Exception:
+                        pass
+
+                    if attempt >= len(self._keys):
+                        delay = max(delay, 60)
+
+                    logger.warning(
+                        "Gemini: rate limited on key %d/%d, retrying in %ds...",
+                        self._current_index + 1,
+                        len(self._keys),
+                        delay,
+                    )
+                    self._rotate_key()
+                    await asyncio.sleep(delay)
+                    continue
+                raise
+
         raise RuntimeError(
             f"Gemini: all {len(self._keys)} API keys exhausted after {max_attempts} attempts. "
             f"Last error: {last_error}"

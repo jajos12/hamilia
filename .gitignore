@@ -39,5 +39,14 @@ data/
 
 # Docker
 docker-compose.override.yml
-frontend/
+
+# Frontend (only ignore build artifacts, not source)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.vercel/
+
+# Docs
 docs/designskills/
+.vercel
+.env*

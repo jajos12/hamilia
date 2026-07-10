@@ -1,6 +1,7 @@
 """Base LLM provider interface."""
 
 from abc import ABC, abstractmethod
+from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 
 from src.core.config import LLMProvider, settings
@@ -46,6 +47,34 @@ class BaseLLMClient(ABC):
         Returns:
             LLMResponse with generated content.
         """
+
+    @abstractmethod
+    async def generate_stream(
+        self,
+        prompt: str,
+        system_prompt: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+    ) -> AsyncIterator[str]:
+        """Generate a completion, yielding text tokens as they arrive.
+
+        Args:
+            prompt: User prompt text.
+            system_prompt: Optional system prompt.
+            temperature: Override default temperature.
+            max_tokens: Override default max tokens.
+
+        Yields:
+            Text chunks as they arrive from the LLM.
+        """
+        # Default implementation: fall back to non-streaming
+        response = await self.generate(
+            prompt=prompt,
+            system_prompt=system_prompt,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+        yield response.content
 
     @abstractmethod
     async def generate_json(

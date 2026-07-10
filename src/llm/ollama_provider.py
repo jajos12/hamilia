@@ -2,6 +2,7 @@
 
 import json
 import logging
+from collections.abc import AsyncIterator
 
 import ollama as ollama_sync
 
@@ -71,6 +72,50 @@ class OllamaProvider(BaseLLMClient):
             usage={},
             raw=response,
         )
+
+    async def generate_stream(
+        self,
+        prompt: str,
+        system_prompt: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+    ) -> AsyncIterator[str]:
+        model = settings.OLLAMA_MODEL
+        messages = []
+
+        if system_prompt:
+            messages.append({"role": "system", "content": system_prompt})
+        messages.append({"role": "user", "content": prompt})
+
+        options = {}
+        if temperature is not None:
+            options["temperature"] = temperature
+        else:
+            options["temperature"] = settings.LLM_TEMPERATURE
+
+        if max_tokens is not None:
+            options["num_predict"] = max_tokens
+
+        logger.info("Ollama: streaming with model=%s", model)
+
+        import asyncio
+        loop = asyncio.get_event_loop()
+
+        def _stream():
+            return ollama_sync.chat(
+                model=model,
+                messages=messages,
+                options=options,
+                stream=True,
+            )
+
+        stream = await loop.run_in_executor(None, _stream)
+
+        for chunk in stream:
+            if "message" in chunk and "content" in chunk["message"]:
+                content = chunk["message"]["content"]
+                if content:
+                    yield content
 
     async def generate_json(
         self,
