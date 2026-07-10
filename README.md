@@ -5,33 +5,33 @@ A dialectical RAG system that finds both supporting and undermining evidence for
 <table>
   <tr>
     <td colspan="2">
-      <img width="100%" alt="Hamilia screenshot 1" src="https://github.com/user-attachments/assets/d90a6f15-fb59-4e36-949d-bdc46e5f40cf" />
+      <img width="1747" height="1015" alt="Screenshot From 2026-07-10 13-10-14" src="https://github.com/user-attachments/assets/d9fb2c34-9467-4800-be14-4fbf20e03dac" />
     </td>
   </tr>
   <tr>
     <td width="50%">
-      <img width="100%" alt="Hamilia screenshot 2" src="https://github.com/user-attachments/assets/006a9d7c-4c0d-48f5-9cb3-25ff983ab0f3" />
+      <img width="1747" height="1015" alt="Screenshot From 2026-07-10 13-10-23" src="https://github.com/user-attachments/assets/b6d4c7e7-015f-493c-a666-8061050c0edb" />
     </td>
     <td width="50%">
-      <img width="100%" alt="Hamilia screenshot 3" src="https://github.com/user-attachments/assets/4d291a9d-4f65-4819-a441-6cc9c7deecd5" />
+      <img width="1747" height="1015" alt="Screenshot From 2026-07-10 13-10-34" src="https://github.com/user-attachments/assets/d55a93ee-d63d-4441-91bf-c5d8e521e595" />
     </td>
   </tr>
   <tr>
     <td width="50%">
-      <img width="100%" alt="Hamilia screenshot 4" src="https://github.com/user-attachments/assets/5a140a1b-516a-49dc-a8ab-21f6443f5fe7" />
+      <img width="1731" height="951" alt="Screenshot From 2026-07-10 13-10-55" src="https://github.com/user-attachments/assets/78629432-82a4-4ae6-a28d-5cc13d283bc4" />
     </td>
     <td width="50%">
-      <img width="100%" alt="Hamilia screenshot 5" src="https://github.com/user-attachments/assets/fec373d4-a4d5-448c-aa02-ddf5089733c2" />
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <img width="100%" alt="Hamilia screenshot 6" src="https://github.com/user-attachments/assets/7671d28d-bb1f-40e9-9204-a23b2387a375" />
+      <img width="1747" height="1015" alt="Screenshot From 2026-07-10 13-10-39" src="https://github.com/user-attachments/assets/87638fd2-c088-4ba3-a8e0-c38b7b073c0f" />
     </td>
   </tr>
   <tr>
     <td colspan="2">
-      <img width="100%" alt="Hamilia screenshot 7" src="https://github.com/user-attachments/assets/7896fa46-1895-4622-89c5-82d01ed47421" />
+      <img width="1750" height="1010" alt="Screenshot From 2026-07-10 13-13-50" src="https://github.com/user-attachments/assets/7014bd79-ea97-43ac-9a85-d060db960ec5" />
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <img width="1724" height="965" alt="Screenshot From 2026-07-10 13-09-43" src="https://github.com/user-attachments/assets/b7fa5e3d-847c-4fc6-a94e-0b494eab73c8" />
     </td>
   </tr>
 </table>
