@@ -5,6 +5,7 @@ export interface ApiKeys {
   geminiKey: string;
   openrouterKey: string;
   openaiKey: string;
+  ollamaUrl: string;
 }
 
 const STORAGE_KEY = "hamilia_api_keys";
@@ -14,6 +15,7 @@ const DEFAULTS: ApiKeys = {
   geminiKey: "",
   openrouterKey: "",
   openaiKey: "",
+  ollamaUrl: "http://localhost:11434",
 };
 
 export function loadApiKeys(): ApiKeys {
@@ -36,6 +38,11 @@ export function buildHeaders(): Record<string, string> {
 
   if (keys.provider !== "ollama") {
     headers["X-LLM-Provider"] = keys.provider;
+  } else {
+    headers["X-LLM-Provider"] = "ollama";
+    if (keys.ollamaUrl && keys.ollamaUrl !== "http://localhost:11434") {
+      headers["X-Ollama-Url"] = keys.ollamaUrl;
+    }
   }
 
   if (keys.geminiKey) headers["X-Gemini-Key"] = keys.geminiKey;

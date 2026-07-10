@@ -19,6 +19,7 @@ export function ApiKeyModal() {
     geminiKey: "",
     openrouterKey: "",
     openaiKey: "",
+    ollamaUrl: "http://localhost:11434",
   });
   const [showGemini, setShowGemini] = useState(false);
   const [showOpenrouter, setShowOpenrouter] = useState(false);
@@ -221,21 +222,25 @@ export function ApiKeyModal() {
                   </div>
                 )}
 
-                {/* Ollama info */}
+                {/* Ollama URL */}
                 {keys.provider === "ollama" && (
-                  <div className="border-[3px] border-black bg-[#88D498]/20 p-4">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="mt-0.5 h-4 w-4 text-[#88D498]" />
-                      <div>
-                        <p className="font-mono text-xs font-bold text-black">
-                          Ollama runs locally
-                        </p>
-                        <p className="mt-1 font-mono text-[10px] text-black/50">
-                          Make sure Ollama is running on your machine with the
-                          model you want. No API key needed.
-                        </p>
-                      </div>
-                    </div>
+                  <div>
+                    <label className="block font-mono text-[10px] font-bold uppercase tracking-widest text-black/50 mb-2">
+                      // Ollama Base URL
+                    </label>
+                    <input
+                      type="text"
+                      value={keys.ollamaUrl}
+                      onChange={(e) =>
+                        setKeys({ ...keys, ollamaUrl: e.target.value })
+                      }
+                      placeholder="http://localhost:11434"
+                      className="w-full border-[3px] border-black bg-white px-4 py-3 font-mono text-sm placeholder:text-black/30 focus:outline-none focus:ring-0 focus:shadow-[5px_5px_0_0_#FFD23F]"
+                    />
+                    <p className="mt-2 font-mono text-[10px] text-black/40">
+                      Local: <span className="text-[#88D498]">http://localhost:11434</span> —
+                      Remote: use ngrok/Cloudflare tunnel or a VPS URL
+                    </p>
                   </div>
                 )}
 

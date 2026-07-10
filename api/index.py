@@ -39,6 +39,10 @@ async def extract_api_keys(request: Request, call_next):
     if openai_key:
         overrides["OPENAI_API_KEY"] = openai_key
 
+    ollama_url = request.headers.get("X-Ollama-Url", "")
+    if ollama_url:
+        overrides["OLLAMA_BASE_URL"] = ollama_url
+
     if overrides:
         set_runtime_overrides(overrides)
 

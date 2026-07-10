@@ -6,7 +6,7 @@ from collections.abc import AsyncIterator
 
 import ollama as ollama_sync
 
-from src.core.config import settings
+from src.core.config import settings, get_runtime_overrides
 from src.llm.base import BaseLLMClient, LLMResponse
 
 logger = logging.getLogger(__name__)
@@ -17,6 +17,10 @@ class OllamaProvider(BaseLLMClient):
 
     Requires Ollama running locally: https://ollama.com/download
     """
+
+    def __init__(self) -> None:
+        overrides = get_runtime_overrides() or {}
+        self._host = overrides.get("OLLAMA_BASE_URL", "") or settings.OLLAMA_BASE_URL
 
     @property
     def provider_name(self) -> str:
@@ -46,7 +50,7 @@ class OllamaProvider(BaseLLMClient):
         if max_tokens is not None:
             options["num_predict"] = max_tokens
 
-        logger.info("Ollama: generating with model=%s", model)
+        logger.info("Ollama: generating with model=%s, host=%s", model, self._host)
 
         # Ollama Python client is sync; run in thread pool
         import asyncio
@@ -59,6 +63,7 @@ class OllamaProvider(BaseLLMClient):
                 messages=messages,
                 options=options,
                 format="json" if response_format else None,
+                host=self._host,
             ),
         )
 
@@ -96,7 +101,7 @@ class OllamaProvider(BaseLLMClient):
         if max_tokens is not None:
             options["num_predict"] = max_tokens
 
-        logger.info("Ollama: streaming with model=%s", model)
+        logger.info("Ollama: streaming with model=%s, host=%s", model, self._host)
 
         import asyncio
         loop = asyncio.get_event_loop()
@@ -107,6 +112,7 @@ class OllamaProvider(BaseLLMClient):
                 messages=messages,
                 options=options,
                 stream=True,
+                host=self._host,
             )
 
         stream = await loop.run_in_executor(None, _stream)
