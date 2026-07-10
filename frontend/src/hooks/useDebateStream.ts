@@ -64,9 +64,11 @@ function parseSSEChunk(chunk: string): StreamEvent[] {
 
 // Determine who speaks next based on turn count
 function getNextSpeaker(turnCount: number): "for" | "against" {
-  // turn 0 = FOR opening, 1 = AGAINST opening
-  // turn 2 = FOR rebuttal, 3 = AGAINST rebuttal, etc.
-  return turnCount % 2 === 0 ? "against" : "for";
+  // After turn 0 (FOR opening) -> turnCount=1 -> next=AGAINST
+  // After turn 1 (AGAINST opening) -> turnCount=2 -> next=FOR
+  // After turn 2 (FOR rebuttal) -> turnCount=3 -> next=AGAINST
+  // So: odd turnCount -> AGAINST, even turnCount -> FOR
+  return turnCount % 2 === 1 ? "against" : "for";
 }
 
 export function useDebateStream() {
