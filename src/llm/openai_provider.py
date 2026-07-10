@@ -16,7 +16,10 @@ class OpenAIProvider(BaseLLMClient):
     """OpenAI API provider."""
 
     def __init__(self) -> None:
-        self._client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+        from src.core.config import get_runtime_overrides
+        overrides = get_runtime_overrides() or {}
+        api_key = overrides.get("OPENAI_API_KEY", "") or settings.OPENAI_API_KEY
+        self._client = AsyncOpenAI(api_key=api_key)
 
     @property
     def provider_name(self) -> str:

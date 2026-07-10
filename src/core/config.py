@@ -1,5 +1,6 @@
+from contextvars import ContextVar
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import Field
 from pydantic_settings import BaseSettings
@@ -12,6 +13,20 @@ class LLMProvider(str, Enum):
     OPENAI = "openai"
     OPENROUTER = "openrouter"
     GEMINI = "gemini"
+
+
+# ── Runtime overrides (per-request API keys from frontend) ──────────────
+_runtime_overrides: ContextVar[dict[str, str] | None] = ContextVar(
+    "runtime_overrides", default=None
+)
+
+
+def set_runtime_overrides(overrides: dict[str, str] | None) -> None:
+    _runtime_overrides.set(overrides)
+
+
+def get_runtime_overrides() -> dict[str, str] | None:
+    return _runtime_overrides.get()
 
 
 class Settings(BaseSettings):
@@ -67,6 +82,13 @@ class Settings(BaseSettings):
         default=0,
         description="Current key index (managed internally, rotates on rate limit).",
     )
+
+    def effective(self, key: str) -> Any:
+        """Get a setting value, checking runtime overrides first."""
+        overrides = get_runtime_overrides()
+        if overrides and key in overrides:
+            return overrides[key]
+        return getattr(self, key)
 
     # Shared LLM config
     LLM_TEMPERATURE: float = Field(default=0.3, description="LLM temperature.")

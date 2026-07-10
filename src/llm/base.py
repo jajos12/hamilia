@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from collections.abc import AsyncIterator
 from dataclasses import dataclass, field
 
-from src.core.config import LLMProvider, settings
+from src.core.config import LLMProvider, settings, get_runtime_overrides
 
 
 @dataclass
@@ -89,9 +89,12 @@ class BaseLLMClient(ABC):
 def get_llm_client() -> BaseLLMClient:
     """Factory: return the configured LLM provider client.
 
-    Change LLM_PROVIDER in .env to switch providers instantly.
+    Checks runtime overrides (from request headers) first, then falls back
+    to .env settings. Change LLM_PROVIDER in .env to switch providers
+    locally, or send X-LLM-Provider + X-API-Key headers from the frontend.
     """
-    provider = settings.LLM_PROVIDER
+    overrides = get_runtime_overrides() or {}
+    provider = overrides.get("LLM_PROVIDER", settings.LLM_PROVIDER)
 
     if provider == LLMProvider.OLLAMA:
         from src.llm.ollama_provider import OllamaProvider

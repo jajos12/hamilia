@@ -21,9 +21,13 @@ class OpenRouterProvider(BaseLLMClient):
     """
 
     def __init__(self) -> None:
+        from src.core.config import get_runtime_overrides
+        overrides = get_runtime_overrides() or {}
+
+        api_key = overrides.get("OPENROUTER_API_KEY", "") or settings.OPENROUTER_API_KEY
         self._client = AsyncOpenAI(
             base_url="https://openrouter.ai/api/v1",
-            api_key=settings.OPENROUTER_API_KEY,
+            api_key=api_key,
             default_headers={
                 "HTTP-Referer": settings.OPENROUTER_SITE_URL,
                 "X-Title": settings.OPENROUTER_APP_NAME,
@@ -42,7 +46,9 @@ class OpenRouterProvider(BaseLLMClient):
         max_tokens: int | None = None,
         response_format: dict | None = None,
     ) -> LLMResponse:
-        model = settings.OPENROUTER_MODEL
+        from src.core.config import get_runtime_overrides
+        overrides = get_runtime_overrides() or {}
+        model = overrides.get("OPENROUTER_MODEL", settings.OPENROUTER_MODEL)
         messages = []
 
         if system_prompt:
@@ -87,7 +93,9 @@ class OpenRouterProvider(BaseLLMClient):
         temperature: float | None = None,
         max_tokens: int | None = None,
     ) -> AsyncIterator[str]:
-        model = settings.OPENROUTER_MODEL
+        from src.core.config import get_runtime_overrides
+        overrides = get_runtime_overrides() or {}
+        model = overrides.get("OPENROUTER_MODEL", settings.OPENROUTER_MODEL)
         messages = []
 
         if system_prompt:

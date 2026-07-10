@@ -24,12 +24,21 @@ class GeminiProvider(BaseLLMClient):
     """
 
     def __init__(self) -> None:
-        self._keys = [k.strip() for k in settings.GEMINI_API_KEYS.split(",") if k.strip()]
-        self._model = settings.GEMINI_MODEL
+        from src.core.config import get_runtime_overrides
+        overrides = get_runtime_overrides() or {}
+
+        # Check for runtime API key first
+        runtime_key = overrides.get("GEMINI_API_KEY", "")
+        if runtime_key:
+            self._keys = [k.strip() for k in runtime_key.split(",") if k.strip()]
+        else:
+            self._keys = [k.strip() for k in settings.GEMINI_API_KEYS.split(",") if k.strip()]
+
+        self._model = overrides.get("GEMINI_MODEL", settings.GEMINI_MODEL)
         self._current_index = settings.GEMINI_KEYS_INDEX
 
         if not self._keys:
-            raise ValueError("No Gemini API keys configured. Set GEMINI_API_KEYS in .env")
+            raise ValueError("No Gemini API keys configured. Set GEMINI_API_KEYS in .env or provide via API")
 
         logger.info("Gemini: initialized with %d API keys, model=%s", len(self._keys), self._model)
 

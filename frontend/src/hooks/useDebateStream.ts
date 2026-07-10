@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef } from "react";
+import { buildHeaders } from "@/lib/apiKeys";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -96,7 +97,7 @@ export function useDebateStream() {
 
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...buildHeaders() },
       body: JSON.stringify({ claim }),
     });
 
@@ -135,7 +136,7 @@ export function useDebateStream() {
 
         const res = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...buildHeaders() },
           body: JSON.stringify({
             session_id: currentState.sessionId,
             phase: currentState.currentPhase,

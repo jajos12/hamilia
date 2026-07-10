@@ -1,3 +1,5 @@
+import { buildHeaders } from "@/lib/apiKeys";
+
 // On Vercel: use relative URLs (rewrites route /api/* to backend service)
 // Local dev: set NEXT_PUBLIC_API_URL=http://localhost:8000 in .env.local
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
@@ -34,7 +36,7 @@ export async function analyzeClaim(claim: string): Promise<DebateResponse> {
     : `/api/v1/analyze-claim`;
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...buildHeaders() },
     body: JSON.stringify({ claim }),
   });
 
