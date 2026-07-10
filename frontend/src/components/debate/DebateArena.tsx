@@ -14,7 +14,7 @@ import { AvatarPicker, AVATARS, type AvatarOption } from "./AvatarPicker";
 import { PhaseTransitionCard } from "./PhaseTransitionCard";
 import { InlineVerdict } from "./InlineVerdict";
 import { CountdownOverlay } from "./CountdownOverlay";
-import { FloatingElements } from "@/components/shared/FloatingElements";
+import { FloatingElements, debateElements } from "@/components/shared/FloatingElements";
 import { useDebateStream } from "@/hooks/useDebateStream";
 
 export function DebateArena() {
@@ -156,7 +156,9 @@ export function DebateArena() {
 
   // ── Debate in progress ─────────────────────────────────────
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col relative">
+      {/* Debate-themed floating elements */}
+      <FloatingElements elements={debateElements} />
       {/* Countdown overlay */}
       {showCountdown && (
         <CountdownOverlay
