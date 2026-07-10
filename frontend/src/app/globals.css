@@ -1,7 +1,5 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -33,7 +31,7 @@
   --font-heading: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
 }
 
-/* ── Light (default) ─────────────────────────────────── */
+/* ── Light (only) ─────────────────────────────────── */
 :root {
   --background: #FFFDF5;
   --foreground: #000000;
@@ -60,34 +58,6 @@
   --judge: #FFD23F;
   --judge-foreground: #000000;
   --radius: 0;
-}
-
-/* ── Dark ────────────────────────────────────────────── */
-.dark {
-  --background: #0A0A0A;
-  --foreground: #F5F5F0;
-  --card: #1A1A1A;
-  --card-foreground: #F5F5F0;
-  --primary: #74B9FF;
-  --primary-foreground: #000000;
-  --secondary: #2A2A2A;
-  --secondary-foreground: #F5F5F0;
-  --muted: #2A2A2A;
-  --muted-foreground: #999999;
-  --accent: #FFD23F;
-  --accent-foreground: #000000;
-  --destructive: #FF6B6B;
-  --border: #333333;
-  --ring: #74B9FF;
-  --sidebar: #111111;
-  --sidebar-foreground: #F5F5F0;
-  --sidebar-border: #333333;
-  --for: #88D498;
-  --for-foreground: #000000;
-  --against: #FF6B6B;
-  --against-foreground: #000000;
-  --judge: #FFD23F;
-  --judge-foreground: #000000;
 }
 
 /* ── Base ────────────────────────────────────────────── */
@@ -172,6 +142,18 @@ body {
   background-size: 24px 24px;
 }
 
+/* ── Noise Overlay ───────────────────────────────────── */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
 /* ── Stance Colors ───────────────────────────────────── */
 .stance-support { --stance: #88D498; }
 .stance-against { --stance: #FF6B6B; }
@@ -191,4 +173,69 @@ body {
 
 .animate-pulse-border {
   animation: pulse-border 2s ease-in-out infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.animate-flicker {
+  animation: flicker 0.1s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px) rotate(-1deg); }
+  75% { transform: translateX(2px) rotate(1deg); }
+}
+
+.animate-shake {
+  animation: shake 0.3s ease-in-out;
+}
+
+@keyframes glitch {
+  0% { clip-path: inset(40% 0 61% 0); transform: translate(-2px, 2px); }
+  20% { clip-path: inset(92% 0 1% 0); transform: translate(1px, -1px); }
+  40% { clip-path: inset(43% 0 1% 0); transform: translate(-1px, 3px); }
+  60% { clip-path: inset(25% 0 58% 0); transform: translate(3px, 1px); }
+  80% { clip-path: inset(54% 0 7% 0); transform: translate(-3px, -2px); }
+  100% { clip-path: inset(58% 0 43% 0); transform: translate(2px, -3px); }
+}
+
+.animate-glitch {
+  animation: glitch 0.3s linear;
+}
+
+@keyframes counter-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+.animate-counter-spin {
+  animation: counter-spin 10s linear infinite;
+}
+
+/* ── Marquee Container ───────────────────────────────── */
+.marquee-container {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.marquee-content {
+  display: inline-block;
+  animation: marquee 25s linear infinite;
+}
+
+.marquee-content:hover {
+  animation-play-state: paused;
 }
